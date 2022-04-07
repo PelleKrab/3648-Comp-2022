@@ -301,7 +301,7 @@ public class Robot extends TimedRobot {
         uptake2.set(0);
       }
 
-    } else {
+    } else if(auton == 2){
       calibratedClimberValue = climberCalibrationValue + climberEconder.getPosition();
 
       if (!ir2.get() && firstBreak) {
@@ -370,6 +370,74 @@ public class Robot extends TimedRobot {
         l_leadMotor.set(0);
       }
 
+    }else{
+      calibratedClimberValue = climberCalibrationValue + climberEconder.getPosition();
+
+      if (!ir2.get() && firstBreak) {
+        climberCalibrationValue = -climberEconder.getPosition();
+        firstBreak = false;
+        climber.set(0);
+      } else if (firstBreak) {
+        climber.set(-0.2);
+      } else {
+        climber.set(0);
+      }
+
+      if (timer.get() < 1) {
+        uptake1.set(0.6);
+        uptake2.set(-0.6);
+      } else if (timer.get() > 1 && timer.get() < 3) {
+        uptake1.set(-0.5);
+        if (ir.get()) {
+          uptake2.set(0.5);
+        } else {
+          uptake2.set(0);
+        }
+        intake.set(0.8);
+      } else if (timer.get() > 7.5 && timer.get() < 7.9) {
+        uptake2.set(0.5);
+      } else if (timer.get() > 7.9 && timer.get() < 11) {
+        uptake2.set(0);
+      } else if (timer.get() > 11 && timer.get() < 12){
+        uptake2.set(0.5);
+      }
+      else {
+        uptake1.set(0);
+        uptake2.set(0);
+        intake.set(0);
+      }
+
+
+      // shooter
+      if (timer.get() < 13 && timer.get() > 5) {
+        shooter.set(0.39);
+      } else {
+        shooter.set(0);
+      }
+
+      // Drive
+      if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < 30 && timer.get() < 2.5) {
+        r_leadMotor.set(-0.22);
+        l_leadMotor.set(0.22);
+      } else if (timer.get() > 3 && timer.get() < 4) {
+        r_leadMotor.set(0.28);
+        l_leadMotor.set(0.28);
+      } else if (timer.get() > 4 && timer.get() < 6) {
+        double lessgo = .0006*(Lx*Lx)-.002;
+        if (Lx > 0) {
+          l_leadMotor.set(lessgo);
+          r_leadMotor.set(lessgo);
+        } else if (Lx < 0) {
+          l_leadMotor.set(-lessgo);
+          r_leadMotor.set(-lessgo);
+        } else {
+          l_leadMotor.set(0);
+          r_leadMotor.set(0);
+        }
+      } else {
+        r_leadMotor.set(0);
+        l_leadMotor.set(0);
+      }
     }
 
     auton = SmartDashboard.getNumber("auton", 0);
@@ -582,12 +650,12 @@ public class Robot extends TimedRobot {
       }
 
       // Normal climbing
-      if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
-        climberVoltage = driver_joystick.getRawAxis(2) * -3;
-      } else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > climberBottomStopValue
-          && driver_joystick.getPOV() == 0) {
+      if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > climberBottomStopValue
+      && driver_joystick.getPOV() == 0) {
         climberVoltage = driver_joystick.getRawAxis(2) * -12;
-      } else if (driver_joystick.getRawAxis(3) >= 0.1 && calibratedClimberValue < climberTopStopValue) {
+      }  else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
+        climberVoltage = driver_joystick.getRawAxis(2) * -3;
+      }else if (driver_joystick.getRawAxis(3) >= 0.1 && calibratedClimberValue < climberTopStopValue) {
         climberVoltage = driver_joystick.getRawAxis(3) * 3;
       } else if (calibratedClimberValue < -4 && calibratedClimberValue > -4.5) {
         climberVoltage = 3;
