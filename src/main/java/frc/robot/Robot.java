@@ -582,11 +582,11 @@ public class Robot extends TimedRobot {
       }
 
       // Normal climbing
-      if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
-        climberVoltage = driver_joystick.getRawAxis(2) * -3;
-      } else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > climberBottomStopValue
+      if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > climberBottomStopValue
           && driver_joystick.getPOV() == 0) {
         climberVoltage = driver_joystick.getRawAxis(2) * -12;
+      } else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
+        climberVoltage = driver_joystick.getRawAxis(2) * -3;
       } else if (driver_joystick.getRawAxis(3) >= 0.1 && calibratedClimberValue < climberTopStopValue) {
         climberVoltage = driver_joystick.getRawAxis(3) * 3;
       } else if (calibratedClimberValue < -4 && calibratedClimberValue > -4.5) {
