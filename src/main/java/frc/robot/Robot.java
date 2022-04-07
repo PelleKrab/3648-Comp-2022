@@ -229,7 +229,7 @@ public class Robot extends TimedRobot {
 
     double rightEconder = -r_encoder.getPosition() + lastREcoder;
     double leftEncoder = l_encoder.getPosition() - lastLEncoder;
-    double autoDistance = -80;
+    double autoDistance = -45;
     double autoTurnSpeed;
     double turnSpeed = 0;
 
@@ -318,18 +318,18 @@ public class Robot extends TimedRobot {
         uptake1.set(0.6);
         uptake2.set(-0.6);
       } else if (timer.get() > 1 && timer.get() < 3) {
-        uptake1.set(-0.6);
+        uptake1.set(-0.5);
         if (ir.get()) {
           uptake2.set(0.5);
         } else {
           uptake2.set(0);
         }
         intake.set(0.8);
-      } else if (timer.get() > 7.5 && timer.get() < 8) {
+      } else if (timer.get() > 7.5 && timer.get() < 7.9) {
         uptake2.set(0.5);
-      } else if (timer.get() > 8 && timer.get() < 9) {
+      } else if (timer.get() > 7.9 && timer.get() < 11) {
         uptake2.set(0);
-      } else if (timer.get() > 9 && timer.get() < 10){
+      } else if (timer.get() > 11 && timer.get() < 12){
         uptake2.set(0.5);
       }
       else {
@@ -340,7 +340,7 @@ public class Robot extends TimedRobot {
 
 
       // shooter
-      if (timer.get() < 10 && timer.get() > 5) {
+      if (timer.get() < 13 && timer.get() > 5) {
         shooter.set(0.43);
       } else {
         shooter.set(0);
@@ -351,8 +351,8 @@ public class Robot extends TimedRobot {
         r_leadMotor.set(-0.3);
         l_leadMotor.set(0.3);
       } else if (timer.get() > 3 && timer.get() < 4) {
-        r_leadMotor.set(0.24);
-        l_leadMotor.set(0.24);
+        r_leadMotor.set(0.28);
+        l_leadMotor.set(0.28);
       } else if (timer.get() > 4 && timer.get() < 6) {
         double lessgo = .0006*(Lx*Lx)-.002;
         if (Lx > 0) {
@@ -387,6 +387,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
+    SmartDashboard.putNumber("auton", 0);
     // startLogs("fake");
     // Camera
     UsbCamera camera = CameraServer.startAutomaticCapture();
@@ -761,6 +762,6 @@ public class Robot extends TimedRobot {
     intspeed = SmartDashboard.getNumber("intakeSpeed", .5);
     autoShooterSpeed = SmartDashboard.getNumber("WHEELSPEED", 0);
     testShooterSpeed = SmartDashboard.getNumber("testShooterSpeed", 0);
-
+    // auton = SmartDashboard.getNumber("auton", 0);
   }
 }
