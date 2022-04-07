@@ -96,9 +96,6 @@ public class Robot extends TimedRobot {
 
   double changeInThetaRad;
 
-  public final ADIS16448_IMU imu = new ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP,
-      ADIS16448_IMU.CalibrationTime._1s);
-
   // IR Sensor
   DigitalInput ir = new DigitalInput(3);
   DigitalInput ir2 = new DigitalInput(2);
@@ -209,9 +206,13 @@ public class Robot extends TimedRobot {
   private double rumbleL = 0;
   // auto
   private double auton = 1;
+  private double robotAngle;
 
   // Timer
   private Timer timer = new Timer();
+
+  private ADIS16448_IMU imu = new ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP,
+  ADIS16448_IMU.CalibrationTime._1s);
 
   @Override
   public void autonomousInit() {
@@ -221,6 +222,9 @@ public class Robot extends TimedRobot {
 
     lastREcoder = r_encoder.getPosition();
     lastLEncoder = l_encoder.getPosition();
+
+    imu.reset();
+    robotAngle = imu.getGyroAngleZ();
   }
 
   @Override
@@ -232,6 +236,10 @@ public class Robot extends TimedRobot {
     double autoDistance = -80;
     double autoTurnSpeed;
     double turnSpeed = 0;
+
+    if(robotAngle>360){
+      robotAngle = (robotAngle % 360);
+    }
 
     // calculate turn speed from camera data
     turnSpeed = (0.00000496032) * (centerX - 280) * (centerX - 360);
@@ -350,18 +358,35 @@ public class Robot extends TimedRobot {
       if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < -autoDistance && timer.get() < 2.5) {
         r_leadMotor.set(-0.3);
         l_leadMotor.set(0.3);
-      } else if (timer.get() > 3 && timer.get() < 4) {
-        r_leadMotor.set(0.24);
-        l_leadMotor.set(0.24);
-      } else if (timer.get() > 4 && timer.get() < 6) {
-        double lessgo = .0006*(Lx*Lx)-.002;
+      } else if (timer.get() > 3 && timer.get() < 4.5) {
+        if(robotAngle<160){
+          r_leadMotor.set(0.2);
+          l_leadMotor.set(0.2);
+        }else if(robotAngle>=160&&robotAngle<175){
+          r_leadMotor.set(0.08);
+          l_leadMotor.set(0.08);
+        }
+        else if(robotAngle>=175&&robotAngle<=185){
+          r_leadMotor.set(0);
+          l_leadMotor.set(0);
+        }else if(robotAngle>185){
+          r_leadMotor.set(-0.08);
+          l_leadMotor.set(-0.08);
+        }
+      } else if (timer.get() > 4.5 && timer.get() < 6.5) {
+        double limeTurnSpeed = .0016*(Lx*Lx)-.001;
+        //double limeTurnSpeed = .0009*(Lx*Lx)-.003; Alternate more sloppy turning less sensitive
+        //double limeTurnSpeed = .02; flat turning
+        if(limeTurnSpeed>.25){
+          limeTurnSpeed=.25;
+        }
         if (Lx > 0) {
-          l_leadMotor.set(lessgo);
-          r_leadMotor.set(lessgo);
+          l_leadMotor.set(-limeTurnSpeed);
+          r_leadMotor.set(-limeTurnSpeed);
         } else if (Lx < 0) {
-          l_leadMotor.set(-lessgo);
-          r_leadMotor.set(-lessgo);
-        } else {
+          l_leadMotor.set(limeTurnSpeed);
+          r_leadMotor.set(limeTurnSpeed);
+        } else if(limeTurnSpeed<.005) {
           l_leadMotor.set(0);
           r_leadMotor.set(0);
         }
@@ -559,7 +584,7 @@ public class Robot extends TimedRobot {
 
     // Limelight distance
     if (Ltv == 1) {
-      limeDistance = (104 - 39) / Math.tan(Math.toRadians(20 + Ly));
+      limeDistance = (104 - 39) / Math.tan(Math.toRadians(18 + Ly));
     }
   }
 
