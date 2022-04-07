@@ -384,8 +384,8 @@ public class Robot extends TimedRobot {
       }
 
       if (timer.get() < 1) {
-        uptake1.set(0.6);
-        uptake2.set(-0.6);
+        uptake1.set(0.75);
+        uptake2.set(-0.75);
       } else if (timer.get() > 1 && timer.get() < 3) {
         uptake1.set(-0.5);
         if (ir.get()) {
@@ -656,7 +656,7 @@ public class Robot extends TimedRobot {
       }  else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
         climberVoltage = driver_joystick.getRawAxis(2) * -3;
       }else if (driver_joystick.getRawAxis(3) >= 0.1 && calibratedClimberValue < climberTopStopValue) {
-        climberVoltage = driver_joystick.getRawAxis(3) * 3;
+        climberVoltage = driver_joystick.getRawAxis(3) * 6;
       } else if (calibratedClimberValue < -4 && calibratedClimberValue > -4.5) {
         climberVoltage = 3;
       } else {
