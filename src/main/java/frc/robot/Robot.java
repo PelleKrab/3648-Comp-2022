@@ -290,7 +290,7 @@ public class Robot extends TimedRobot {
       }
 
       if (timer.get() < 6) {
-        shooter.set(0.43);
+        shooter.set(0.45);
       } else {
         shooter.set(0);
       }
@@ -341,7 +341,7 @@ public class Robot extends TimedRobot {
 
       // shooter
       if (timer.get() < 13 && timer.get() > 5) {
-        shooter.set(0.431);
+        shooter.set(0.45);
       } else {
         shooter.set(0);
       }
