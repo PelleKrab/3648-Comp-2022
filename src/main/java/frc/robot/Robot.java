@@ -213,6 +213,11 @@ public class Robot extends TimedRobot {
   // Timer
   private Timer timer = new Timer();
 
+  //range finder
+  private boolean tooFar;
+  private boolean inRange;
+  private boolean tooClose;
+
   @Override
   public void autonomousInit() {
     timer.reset();
@@ -625,11 +630,30 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Distance (lime)", limeDistance);
 
     counter = System.currentTimeMillis();
-
+    
     // Limelight distance
     if (Ltv == 1) {
       limeDistance = (104 - 39) / Math.tan(Math.toRadians(20 + Ly));
+      if(limeDistance > 215){
+        tooFar = true;
+        tooClose = false;
+        inRange = false;
+      }else if(limeDistance < 160){
+        tooFar = false;
+        tooClose = true;
+        inRange = false;
+      }else{
+        tooFar = false;
+        tooClose = false;
+        inRange = true;
+      }
+    }else{
+        tooFar = false;
+        tooClose = false;
+        inRange = false;
     }
+
+
   }
 
   private void climing() {
@@ -770,20 +794,26 @@ public class Robot extends TimedRobot {
     // D-Pad set points
     if (shooter_joystick.getPOV() == 0) {
       shooterSpeed = 0.431;
-      if(S_Encoder.getVelocity() > 2150){
+      if(S_Encoder.getVelocity() > 2130){
         rumbleL = 1;
+      }else{
+        rumbleL = 0;
       }
 
     }else if (shooter_joystick.getPOV() == 90) {
       shooterSpeed = 0.45;
       if(S_Encoder.getVelocity() > 2200){
         rumbleL = 1;
+      }else{
+        rumbleL = 0;
       }
 
     } else if (shooter_joystick.getPOV() == 180) {
       shooterSpeed = 0.2;
       if(S_Encoder.getVelocity() > 900 && S_Encoder.getVelocity() < 1000){
         rumbleL = 1;
+      }else{
+        rumbleL = 0;
       }
 
     } else if (shooter_joystick.getRawAxis(2) >= 0.1) {
@@ -837,5 +867,10 @@ public class Robot extends TimedRobot {
     autoShooterSpeed = SmartDashboard.getNumber("WHEELSPEED", 0);
     testShooterSpeed = SmartDashboard.getNumber("testShooterSpeed", 0);
     // auton = SmartDashboard.getNumber("auton", 0);
+
+    //distances
+    SmartDashboard.putBoolean("tooFar", tooFar);
+    SmartDashboard.putBoolean("tooClose", tooClose);
+    SmartDashboard.putBoolean("inRange", inRange);
   }
 }
