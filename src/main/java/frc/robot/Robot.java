@@ -341,7 +341,7 @@ public class Robot extends TimedRobot {
 
       // shooter
       if (timer.get() < 13 && timer.get() > 5) {
-        shooter.set(0.43);
+        shooter.set(0.431);
       } else {
         shooter.set(0);
       }
@@ -444,7 +444,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("rightAutoEncoder", rightEconder);
     SmartDashboard.putNumber("leftAutoEncoder", leftEncoder);
     SmartDashboard.putNumber("backauto", (rightEconder + leftEncoder) / 2 / 10.75 * 18.5);
-
 
     SmartDashboard.putNumber("cex", centerX);
     SmartDashboard.putNumber("time", timer.get());
@@ -769,8 +768,14 @@ public class Robot extends TimedRobot {
 
     // D-Pad set points
     if (shooter_joystick.getPOV() == 0) {
+      shooterSpeed = 0.431;
+      if(S_Encoder.getVelocity() > 2150){
+        rumbleL = 1;
+      }
+
+    }else if (shooter_joystick.getPOV() == 90) {
       shooterSpeed = 0.45;
-      if(S_Encoder.getVelocity() > 2100){
+      if(S_Encoder.getVelocity() > 2200){
         rumbleL = 1;
       }
 
