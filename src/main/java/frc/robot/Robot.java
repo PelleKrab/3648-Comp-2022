@@ -221,6 +221,7 @@ public class Robot extends TimedRobot {
 
     lastREcoder = r_encoder.getPosition();
     lastLEncoder = l_encoder.getPosition();
+    
   }
 
   @Override
@@ -229,7 +230,7 @@ public class Robot extends TimedRobot {
 
     double rightEconder = -r_encoder.getPosition() + lastREcoder;
     double leftEncoder = l_encoder.getPosition() - lastLEncoder;
-    double autoDistance = -45;
+    double autoDistance = -50;
     double autoTurnSpeed;
     double turnSpeed = 0;
 
@@ -289,7 +290,7 @@ public class Robot extends TimedRobot {
         }
       }
 
-      if (timer.get() < 6) {
+      if (timer.get() < 4) {
         shooter.set(0.45);
       } else {
         shooter.set(0);
@@ -314,10 +315,10 @@ public class Robot extends TimedRobot {
         climber.set(0);
       }
 
-      if (timer.get() < 1) {
-        uptake1.set(0.6);
-        uptake2.set(-0.6);
-      } else if (timer.get() > 1 && timer.get() < 3) {
+      if (timer.get() < 2) {
+        uptake1.set(0.9);
+        uptake2.set(-0.9);
+      } else if (timer.get() > 2 && timer.get() < 4) {
         uptake1.set(-0.5);
         if (ir.get()) {
           uptake2.set(0.5);
@@ -350,10 +351,10 @@ public class Robot extends TimedRobot {
       if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < -autoDistance && timer.get() < 2.5) {
         r_leadMotor.set(-0.3);
         l_leadMotor.set(0.3);
-      } else if (timer.get() > 3 && timer.get() < 4) {
+      } else if (timer.get() > 4 && timer.get() < 5) {
         r_leadMotor.set(0.28);
         l_leadMotor.set(0.28);
-      } else if (timer.get() > 4 && timer.get() < 6) {
+      } else if (timer.get() > 5 && timer.get() < 7) {
         double lessgo = .0006*(Lx*Lx)-.002;
         if (Lx > 0) {
           l_leadMotor.set(lessgo);
@@ -383,10 +384,10 @@ public class Robot extends TimedRobot {
         climber.set(0);
       }
 
-      if (timer.get() < 1) {
-        uptake1.set(0.75);
-        uptake2.set(-0.75);
-      } else if (timer.get() > 1 && timer.get() < 3) {
+      if (timer.get() < 2) {
+        uptake1.set(0.9);
+        uptake2.set(-0.9);
+      } else if (timer.get() > 2 && timer.get() < 4) {
         uptake1.set(-0.5);
         if (ir.get()) {
           uptake2.set(0.5);
@@ -419,10 +420,10 @@ public class Robot extends TimedRobot {
       if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < 30 && timer.get() < 2.5) {
         r_leadMotor.set(-0.22);
         l_leadMotor.set(0.22);
-      } else if (timer.get() > 3 && timer.get() < 4) {
+      } else if (timer.get() > 4 && timer.get() < 5) {
         r_leadMotor.set(0.28);
         l_leadMotor.set(0.28);
-      } else if (timer.get() > 4 && timer.get() < 6) {
+      } else if (timer.get() > 5 && timer.get() < 7) {
         double lessgo = .0006*(Lx*Lx)-.002;
         if (Lx > 0) {
           l_leadMotor.set(lessgo);
