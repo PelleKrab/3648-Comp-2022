@@ -217,6 +217,54 @@ public class Robot extends TimedRobot {
   private boolean tooFar;
   private boolean inRange;
   private boolean tooClose;
+  @Override
+  public void robotInit() {
+    
+    // startLogs("fake");
+    // Camera
+    UsbCamera camera = CameraServer.startAutomaticCapture();
+    camera.setResolution(640, 480);
+    CameraServer.startAutomaticCapture();
+
+    r_leadMotor = new CANSparkMax(rleadDeviceID, MotorType.kBrushless);
+    r_followMotor = new CANSparkMax(rfollowDeviceID, MotorType.kBrushless);
+
+    l_leadMotor = new CANSparkMax(leadDeviceID, MotorType.kBrushless);
+    l_followMotor = new CANSparkMax(followDeviceID, MotorType.kBrushless);
+    climber = new CANSparkMax(climberID, MotorType.kBrushless);
+    shooter = new CANSparkMax(shooterID, MotorType.kBrushless);
+
+    l_leadMotor.restoreFactoryDefaults();
+    l_followMotor.restoreFactoryDefaults();
+    r_leadMotor.restoreFactoryDefaults();
+    r_followMotor.restoreFactoryDefaults();
+    climber.restoreFactoryDefaults();
+    shooter.restoreFactoryDefaults();
+
+    l_followMotor.follow(l_leadMotor);
+    r_followMotor.follow(r_leadMotor);
+
+    S_Encoder = shooter.getEncoder();
+    r_encoder = r_leadMotor.getEncoder();
+    l_encoder = l_leadMotor.getEncoder();
+    r_fEncoder = r_followMotor.getEncoder();
+    l_fEncoder = l_followMotor.getEncoder();
+    climberEconder = climber.getEncoder();
+    //SmartDashboard.putNumber("xInput", 0);
+    //SmartDashboard.putNumber("yInput", 0);
+    SmartDashboard.putNumber("auton", 0);
+    //auton = SmartDashboard.getNumber("auton", 0);
+    auton = SmartDashboard.getNumber("auton", 0);
+    SmartDashboard.putNumber("shooterSpeed", .2);
+    SmartDashboard.putNumber("Yint", .3687);
+    SmartDashboard.putNumber("intakeSpeed", .5);
+    SmartDashboard.putNumber("AUTOSPEED", 0);
+    SmartDashboard.putNumber("testShooterSpeed", 0);
+
+    driver_joystick = new Joystick(kJoystickPort);
+    shooter_joystick = new Joystick(kJoystickPort2);
+
+  }
 
   @Override
   public void autonomousInit() {
@@ -226,7 +274,7 @@ public class Robot extends TimedRobot {
 
     lastREcoder = r_encoder.getPosition();
     lastLEncoder = l_encoder.getPosition();
-    
+    auton = SmartDashboard.getNumber("auton", 0);
   }
 
   @Override
@@ -322,7 +370,7 @@ public class Robot extends TimedRobot {
 
       if (timer.get() < 2) {
         uptake1.set(0.9);
-        uptake2.set(-0.9);
+        uptake2.set(-0.75);
       } else if (timer.get() > 2 && timer.get() < 4) {
         uptake1.set(-0.5);
         if (ir.get()) {
@@ -415,14 +463,14 @@ public class Robot extends TimedRobot {
 
 
       // shooter
-      if (timer.get() < 13 && timer.get() > 5) {
+      if (timer.get() < 13 && timer.get() > 3) {
         shooter.set(0.39);
       } else {
         shooter.set(0);
       }
 
       // Drive
-      if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < 30 && timer.get() < 2.5) {
+      if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < 31 && timer.get() < 2.5) {
         r_leadMotor.set(-0.22);
         l_leadMotor.set(0.22);
       } else if (timer.get() > 4 && timer.get() < 5) {
@@ -446,7 +494,7 @@ public class Robot extends TimedRobot {
       }
     }
 
-    auton = SmartDashboard.getNumber("auton", 0);
+    //auton = SmartDashboard.getNumber("auton", 0);
     SmartDashboard.putNumber("rightAutoEncoder", rightEconder);
     SmartDashboard.putNumber("leftAutoEncoder", leftEncoder);
     SmartDashboard.putNumber("backauto", (rightEconder + leftEncoder) / 2 / 10.75 * 18.5);
@@ -458,51 +506,7 @@ public class Robot extends TimedRobot {
 
   }
 
-  @Override
-  public void robotInit() {
-    SmartDashboard.putNumber("auton", 0);
-    // startLogs("fake");
-    // Camera
-    UsbCamera camera = CameraServer.startAutomaticCapture();
-    camera.setResolution(640, 480);
-    CameraServer.startAutomaticCapture();
-
-    r_leadMotor = new CANSparkMax(rleadDeviceID, MotorType.kBrushless);
-    r_followMotor = new CANSparkMax(rfollowDeviceID, MotorType.kBrushless);
-
-    l_leadMotor = new CANSparkMax(leadDeviceID, MotorType.kBrushless);
-    l_followMotor = new CANSparkMax(followDeviceID, MotorType.kBrushless);
-    climber = new CANSparkMax(climberID, MotorType.kBrushless);
-    shooter = new CANSparkMax(shooterID, MotorType.kBrushless);
-
-    l_leadMotor.restoreFactoryDefaults();
-    l_followMotor.restoreFactoryDefaults();
-    r_leadMotor.restoreFactoryDefaults();
-    r_followMotor.restoreFactoryDefaults();
-    climber.restoreFactoryDefaults();
-    shooter.restoreFactoryDefaults();
-
-    l_followMotor.follow(l_leadMotor);
-    r_followMotor.follow(r_leadMotor);
-
-    S_Encoder = shooter.getEncoder();
-    r_encoder = r_leadMotor.getEncoder();
-    l_encoder = l_leadMotor.getEncoder();
-    r_fEncoder = r_followMotor.getEncoder();
-    l_fEncoder = l_followMotor.getEncoder();
-    climberEconder = climber.getEncoder();
-    SmartDashboard.putNumber("xInput", 0);
-    SmartDashboard.putNumber("yInput", 0);
-    SmartDashboard.putNumber("shooterSpeed", .2);
-    SmartDashboard.putNumber("Yint", .3687);
-    SmartDashboard.putNumber("intakeSpeed", .5);
-    SmartDashboard.putNumber("AUTOSPEED", 0);
-    SmartDashboard.putNumber("testShooterSpeed", 0);
-
-    driver_joystick = new Joystick(kJoystickPort);
-    shooter_joystick = new Joystick(kJoystickPort2);
-
-  }
+  
 
   @Override
   public void teleopPeriodic() {
@@ -621,7 +625,7 @@ public class Robot extends TimedRobot {
     Ly = ty.getDouble(0.0);
     Larea = ta.getDouble(0.0);
     Ltv = tv.getDouble(0.0);
-    SmartDashboard.putNumber("ooks", centerX);
+    //SmartDashboard.putNumber("ooks", centerX);
 
     // post to smart dashboard periodically
     SmartDashboard.putNumber("LimelightX", Lx);
@@ -793,8 +797,8 @@ public class Robot extends TimedRobot {
 
     // D-Pad set points
     if (shooter_joystick.getPOV() == 0) {
-      shooterSpeed = 0.431;
-      if(S_Encoder.getVelocity() > 2130){
+      shooterSpeed = 0.43;
+      if(S_Encoder.getVelocity() > 2200){
         rumbleL = 1;
       }else{
         rumbleL = 0;
@@ -832,39 +836,39 @@ public class Robot extends TimedRobot {
   private void smartDashboardUpdate() {
 
     // 10 Axis Gyro
-    SmartDashboard.putNumber("Angle", angle);
-    SmartDashboard.putNumber("Adjusted Angle", adjustedAngle);
-    SmartDashboard.putNumber("acceleration", imu.getYFilteredAccelAngle());
+    // SmartDashboard.putNumber("Angle", angle);
+    // SmartDashboard.putNumber("Adjusted Angle", adjustedAngle);
+    // SmartDashboard.putNumber("acceleration", imu.getYFilteredAccelAngle());
     SmartDashboard.putNumber("climbVal", calibratedClimberValue);
     SmartDashboard.putBoolean("climbIr", ir2.get());
     SmartDashboard.putBoolean("shootIr", ir.get());
 
-    SmartDashboard.putBoolean("fBrake", firstBreak);
-    SmartDashboard.putBoolean("go", goOrNo);
+    //SmartDashboard.putBoolean("fBrake", firstBreak);
+    // SmartDashboard.putBoolean("go", goOrNo);
 
     // Encoders
-    SmartDashboard.putNumber("right motor power", splitRight);
-    SmartDashboard.putNumber("left motor power", splitLeft);
+    // SmartDashboard.putNumber("right motor power", splitRight);
+    // SmartDashboard.putNumber("left motor power", splitLeft);
 
-    SmartDashboard.putNumber("Right Wheels", r_encoder.getVelocity() * -1);
-    SmartDashboard.putNumber("Left Wheels", l_encoder.getVelocity());
+    //SmartDashboard.putNumber("Right Wheels", r_encoder.getVelocity() * -1);
+    //SmartDashboard.putNumber("Left Wheels", l_encoder.getVelocity());
 
     SmartDashboard.putNumber("rEncoder", (r_encoder.getPosition() / 12.75 * 18 * -1));
     SmartDashboard.putNumber("lEncoder", l_encoder.getPosition() / 12.75 * 18);
-    SmartDashboard.putNumber("distance", distance);
-    SmartDashboard.putNumber("targetAngle", targetAngle);
+    //SmartDashboard.putNumber("distance", distance);
+    //SmartDashboard.putNumber("targetAngle", targetAngle);
     SmartDashboard.putNumber("Climb Encoder", climberEconder.getPosition());
     SmartDashboard.putNumber("FINAL RPM", rpmS);
     SmartDashboard.putNumber("tSp", speed);
 
     // smartSpeed = SmartDashboard.getNumber("shooterSpeed", .2);
     SmartDashboard.putNumber("Shooter RPM", S_Encoder.getVelocity());
-    SmartDashboard.putNumber("Target RPM", autoShooterSpeed);
-    SmartDashboard.putNumber("woah", rpmAdjustedSpeed);
+    //SmartDashboard.putNumber("Target RPM", autoShooterSpeed);
+    // SmartDashboard.putNumber("woah", rpmAdjustedSpeed);
     SmartDashboard.putBoolean("trigger Bool", triggerBool);
     yintShoot = SmartDashboard.getNumber("Yint", .3687);
     intspeed = SmartDashboard.getNumber("intakeSpeed", .5);
-    autoShooterSpeed = SmartDashboard.getNumber("WHEELSPEED", 0);
+    // autoShooterSpeed = SmartDashboard.getNumber("WHEELSPEED", 0);
     testShooterSpeed = SmartDashboard.getNumber("testShooterSpeed", 0);
     // auton = SmartDashboard.getNumber("auton", 0);
 
