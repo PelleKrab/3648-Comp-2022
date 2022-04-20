@@ -30,3 +30,17 @@
   <li>Joystick(5) = Uptake2 up/down(Overrides IR sensor stop)</li>
 </ul>
 
+<h2>Drivers Manual</h2>
+<ul>
+  <li>Be carefull at full speed very easy to tip over</li>
+  <li>When climber is locked it can't be unlocked without a human</li>
+  <li>If intake is not deployed in auto you must jerk it down</li>
+  <li>Best shooting spot is between 170-210 inches from the hoop</li>
+</ul>
+
+
+<h2>Shooter Manual</h2>
+<ul>
+  <li>The controller will shake when the rpm is high enough for you to shoot</li>
+  <li></li>
+</ul>
