@@ -194,7 +194,6 @@ public class Robot extends TimedRobot {
   private double testShooterSpeed = 0;
   private double rpmS = 0;
   private boolean triggerBool = true;
-
   private double shooterSpeed = 0;
 
   // Intake
@@ -554,14 +553,12 @@ public class Robot extends TimedRobot {
   private void driving() {
 
     // Slow Speed
-    if (driver_joystick.getRawButtonReleased(3)) {
-      slow *= -1;
+    if(driver_joystick.getRawButton(9)){
+      powerScale = 1;
+    }else{
+      powerScale = 0.825;
     }
-    if (slow == 1) {
-      powerScale = 0.9;
-    } else if (slow == -1) {
-      powerScale = 0.5;
-    }
+
     leftOutput = 0;
     rightOutput = 0;
     // Split arcade
@@ -806,7 +803,7 @@ public class Robot extends TimedRobot {
 
     }else if (shooter_joystick.getPOV() == 90) {
       shooterSpeed = 0.45;
-      if(S_Encoder.getVelocity() > 2200){
+      if(S_Encoder.getVelocity() > 2300){
         rumbleL = 1;
       }else{
         rumbleL = 0;
