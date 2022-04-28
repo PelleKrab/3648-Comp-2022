@@ -1,4 +1,3 @@
-
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
@@ -6,13 +5,9 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-//Clean up and turn everything into function.
-//Use pelles sketchy split arcade code in this
-//Need to use variables for all values set to motors so everyting is syncronised.
 package frc.robot;
 
 import edu.wpi.first.wpilibj.ADIS16448_IMU;
-import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI;
@@ -20,38 +15,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.ref.Cleaner.Cleanable;
-import java.util.Scanner;
-
-import javax.sound.midi.Receiver;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import org.opencv.core.Rect;
-import org.opencv.imgproc.Imgproc;
-
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.vision.VisionPipeline;
-import edu.wpi.first.vision.VisionThread;
-
-//import org.graalvm.compiler.lir.amd64.vector.AMD64VectorShuffle.ShuffleBytesOp;
-
-//import org.opencv.core.Mat;
 
 public class Robot extends TimedRobot {
 
@@ -78,8 +50,6 @@ public class Robot extends TimedRobot {
   private Joystick driver_joystick;
   private Joystick shooter_joystick;
 
-  private double angle;
-
   private RelativeEncoder r_encoder, l_encoder, S_Encoder, r_fEncoder, l_fEncoder, climberEconder, shooterEncoder;
   public PWMSparkMax intake = new PWMSparkMax(intakeID);
   public PWMSparkMax uptake1 = new PWMSparkMax(uptake1ID);
@@ -87,15 +57,10 @@ public class Robot extends TimedRobot {
 
   private double speed = 1;
 
-  private double targetAngle = 90;
-  private double incval = .0005;
-
   // Split drive
-  private double splitRight;
-  private double splitLeft;
-
   double changeInThetaRad;
 
+  // Gyro work-around
   public final ADIS16448_IMU imu = new ADIS16448_IMU(ADIS16448_IMU.IMUAxis.kZ, SPI.Port.kMXP,
       ADIS16448_IMU.CalibrationTime._1s);
 
@@ -104,68 +69,25 @@ public class Robot extends TimedRobot {
   DigitalInput ir2 = new DigitalInput(2);
 
   // Odometry
-  private double x;
-  private double y;
-
   private boolean firstBreak = true;
-
-  private double distance = 0;
-  private double currentDistance = 0;
-
-  private double rLastEcoder = 0;
-  private double rCurrentDistance = 0;
-
-  private double lLastEcoder = 0;
-  private double lCurrentDistance = 0;
-
-  private double counta;
   private double counter, startT;
 
-  private double theta = 0;
-  private double lastTheta = 0;
-
-  private double rEncoder = 0;
-
-  private boolean goOrNo = false;
-
-  private double l;
-  private double s = 0;
-  private boolean initShoot;
-  private boolean irRead = false;
-
-  private double targetDistance = 0;
-  private double xTarget = 100;
-  private double yTarget = 100;
-  private double dX, dY, leftSpeed, rightSpeed, smartSpeed, intspeed, yintShoot;
-
-  private double deltaTheta;
+  // Intake
+  private double shootButtonUptakeSpeed = 0;
   private double intakeCuh = 0;
-  private double gyroAngle;
-
-  private int invert = 1;
-
-  private double limeDistance;
 
   // Limelight
   private double Lx;
   private double Ly;
   private double Larea;
   private double Ltv;
-
-  // Camera
-  private CvSource outputStream;
-
-  // Grip Pipeline
-  private final Object imgLock = new Object();
-  public double centerX = 0.0;
-  private VisionThread visionThread;
+  private double limeDistance;
 
   // Diving
   private double leftOutput = 0;
   private double rightOutput = 0;
   private double leftJoyStick = 0;
   private double rightJoyStick = 0;
-  private int slow = 1;
 
   double deadZone = 0.05;
   private double splitTurnScale = 0.35;
@@ -187,8 +109,6 @@ public class Robot extends TimedRobot {
   private double lastLEncoder;
 
   // Shooter
-  private double rpmAdjustedSpeed = 0;
-  private double adjustedAngle;
   private double autoSpeed;
   private double autoShooterSpeed = 0;
   private double testShooterSpeed = 0;
@@ -206,25 +126,21 @@ public class Robot extends TimedRobot {
   // Rumble
   private double rumble = 0;
   private double rumbleL = 0;
-  // auto
+
+  // Auton
   private double auton = 1;
 
   // Timer
   private Timer timer = new Timer();
 
-  //range finder
+  // range finder
   private boolean tooFar;
   private boolean inRange;
   private boolean tooClose;
+
   @Override
   public void robotInit() {
-    
-    // startLogs("fake");
-    // Camera
-    UsbCamera camera = CameraServer.startAutomaticCapture();
-    camera.setResolution(640, 480);
-    CameraServer.startAutomaticCapture();
-
+    // Motors
     r_leadMotor = new CANSparkMax(rleadDeviceID, MotorType.kBrushless);
     r_followMotor = new CANSparkMax(rfollowDeviceID, MotorType.kBrushless);
 
@@ -233,6 +149,7 @@ public class Robot extends TimedRobot {
     climber = new CANSparkMax(climberID, MotorType.kBrushless);
     shooter = new CANSparkMax(shooterID, MotorType.kBrushless);
 
+    // Set motors to defaults
     l_leadMotor.restoreFactoryDefaults();
     l_followMotor.restoreFactoryDefaults();
     r_leadMotor.restoreFactoryDefaults();
@@ -240,19 +157,20 @@ public class Robot extends TimedRobot {
     climber.restoreFactoryDefaults();
     shooter.restoreFactoryDefaults();
 
+    // Follow motors
     l_followMotor.follow(l_leadMotor);
     r_followMotor.follow(r_leadMotor);
 
+    // Encoders
     S_Encoder = shooter.getEncoder();
     r_encoder = r_leadMotor.getEncoder();
     l_encoder = l_leadMotor.getEncoder();
     r_fEncoder = r_followMotor.getEncoder();
     l_fEncoder = l_followMotor.getEncoder();
     climberEconder = climber.getEncoder();
-    //SmartDashboard.putNumber("xInput", 0);
-    //SmartDashboard.putNumber("yInput", 0);
+
+    // Shuffleboard
     SmartDashboard.putNumber("auton", 0);
-    //auton = SmartDashboard.getNumber("auton", 0);
     auton = SmartDashboard.getNumber("auton", 0);
     SmartDashboard.putNumber("shooterSpeed", .2);
     SmartDashboard.putNumber("Yint", .3687);
@@ -260,6 +178,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("AUTOSPEED", 0);
     SmartDashboard.putNumber("testShooterSpeed", 0);
 
+    // Joysticks
     driver_joystick = new Joystick(kJoystickPort);
     shooter_joystick = new Joystick(kJoystickPort2);
 
@@ -267,27 +186,27 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    // Timer
     timer.reset();
     timer.start();
+
+    // Climber calibration
     firstBreak = true;
 
+    // Encoder
     lastREcoder = r_encoder.getPosition();
     lastLEncoder = l_encoder.getPosition();
+
+    // Smartdashboard
     auton = SmartDashboard.getNumber("auton", 0);
   }
 
   @Override
   public void autonomousPeriodic() {
-    
-
+    // Set ecoders to 0
     double rightEconder = -r_encoder.getPosition() + lastREcoder;
     double leftEncoder = l_encoder.getPosition() - lastLEncoder;
     double autoDistance = -50;
-    double autoTurnSpeed;
-    double turnSpeed = 0;
-
-    // calculate turn speed from camera data
-    turnSpeed = (0.00000496032) * (centerX - 280) * (centerX - 360);
 
     // Lime light
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -301,11 +220,7 @@ public class Robot extends TimedRobot {
     Larea = ta.getDouble(0.0);
     Ltv = tv.getDouble(0.0);
 
-    autoTurnSpeed = .001 * Math.abs(Lx);
-    if (autoTurnSpeed < 0.3) {
-      autoTurnSpeed = 0.3;
-    }
-
+    // Set the auton you want to use with the auton value in smartdashboard
     if (auton == 1) {
       // Calibrate climber
       calibratedClimberValue = climberCalibrationValue + climberEconder.getPosition();
@@ -329,6 +244,7 @@ public class Robot extends TimedRobot {
         l_leadMotor.set(0);
       }
 
+      // Uses limelight to line up with hoop
       if ((rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < autoDistance && timer.get() < 5 && timer.get() < 3) {
         if (Lx > 2.5) {
           r_leadMotor.set(0.05);
@@ -342,21 +258,23 @@ public class Robot extends TimedRobot {
         }
       }
 
+      // Shooter
       if (timer.get() < 4) {
         shooter.set(0.45);
       } else {
         shooter.set(0);
       }
 
+      // Uptake2
       if (timer.get() > 4 && timer.get() < 5 && (rightEconder + leftEncoder) / 2 / 10.75 * 18.5 < autoDistance) {
         uptake2.set(0.5);
       } else {
         uptake2.set(0);
       }
 
-    } else if(auton == 2){
+    } else if (auton == 2) {
       calibratedClimberValue = climberCalibrationValue + climberEconder.getPosition();
-
+      // Calibrate climber
       if (!ir2.get() && firstBreak) {
         climberCalibrationValue = -climberEconder.getPosition();
         firstBreak = false;
@@ -367,6 +285,7 @@ public class Robot extends TimedRobot {
         climber.set(0);
       }
 
+      // Uptakes & intake
       if (timer.get() < 2) {
         uptake1.set(0.9);
         uptake2.set(-0.75);
@@ -382,15 +301,13 @@ public class Robot extends TimedRobot {
         uptake2.set(0.5);
       } else if (timer.get() > 7.9 && timer.get() < 11) {
         uptake2.set(0);
-      } else if (timer.get() > 11 && timer.get() < 12){
+      } else if (timer.get() > 11 && timer.get() < 12) {
         uptake2.set(0.5);
-      }
-      else {
+      } else {
         uptake1.set(0);
         uptake2.set(0);
         intake.set(0);
       }
-
 
       // shooter
       if (timer.get() < 13 && timer.get() > 5) {
@@ -407,7 +324,7 @@ public class Robot extends TimedRobot {
         r_leadMotor.set(0.28);
         l_leadMotor.set(0.28);
       } else if (timer.get() > 5 && timer.get() < 7) {
-        double lessgo = .0006*(Lx*Lx)-.002;
+        double lessgo = .0006 * (Lx * Lx) - .002;
         if (Lx > 0) {
           l_leadMotor.set(lessgo);
           r_leadMotor.set(lessgo);
@@ -422,10 +339,9 @@ public class Robot extends TimedRobot {
         r_leadMotor.set(0);
         l_leadMotor.set(0);
       }
-
-    }else{
+    } else {
+      // Calibrate climber
       calibratedClimberValue = climberCalibrationValue + climberEconder.getPosition();
-
       if (!ir2.get() && firstBreak) {
         climberCalibrationValue = -climberEconder.getPosition();
         firstBreak = false;
@@ -436,6 +352,7 @@ public class Robot extends TimedRobot {
         climber.set(0);
       }
 
+      // Uptakes and intake
       if (timer.get() < 2) {
         uptake1.set(0.9);
         uptake2.set(-0.9);
@@ -451,17 +368,15 @@ public class Robot extends TimedRobot {
         uptake2.set(0.5);
       } else if (timer.get() > 7.9 && timer.get() < 11) {
         uptake2.set(0);
-      } else if (timer.get() > 11 && timer.get() < 12){
+      } else if (timer.get() > 11 && timer.get() < 12) {
         uptake2.set(0.5);
-      }
-      else {
+      } else {
         uptake1.set(0);
         uptake2.set(0);
         intake.set(0);
       }
 
-
-      // shooter
+      // Shooter
       if (timer.get() < 13 && timer.get() > 5) {
         shooter.set(0.39);
       } else {
@@ -476,7 +391,7 @@ public class Robot extends TimedRobot {
         r_leadMotor.set(0.28);
         l_leadMotor.set(0.28);
       } else if (timer.get() > 5 && timer.get() < 7) {
-        double lessgo = .0006*(Lx*Lx)-.002;
+        double lessgo = .0006 * (Lx * Lx) - .002;
         if (Lx > 0) {
           l_leadMotor.set(lessgo);
           r_leadMotor.set(lessgo);
@@ -493,26 +408,20 @@ public class Robot extends TimedRobot {
       }
     }
 
-    //auton = SmartDashboard.getNumber("auton", 0);
+    // Auton Smartdashboard
     SmartDashboard.putNumber("rightAutoEncoder", rightEconder);
     SmartDashboard.putNumber("leftAutoEncoder", leftEncoder);
     SmartDashboard.putNumber("backauto", (rightEconder + leftEncoder) / 2 / 10.75 * 18.5);
 
-    SmartDashboard.putNumber("cex", centerX);
     SmartDashboard.putNumber("time", timer.get());
     SmartDashboard.putNumber("ballturnSpeed", autoSpeed);
-    SmartDashboard.putNumber("autoDistance", (rightEconder + leftEncoder) / 2 / 10.75 * 18.5);    
+    SmartDashboard.putNumber("autoDistance", (rightEconder + leftEncoder) / 2 / 10.75 * 18.5);
 
   }
 
-  
-
   @Override
   public void teleopPeriodic() {
-
-    // Launch pad to hoop 19.5 feet
-    // autoSpeed = (Math.pow(limeDistance, x) + (limeDistance * x) + x);
-
+    // Call functions
     driving();
     climing();
     uptakes();
@@ -553,25 +462,19 @@ public class Robot extends TimedRobot {
   private void driving() {
 
     // Slow Speed
-    if(driver_joystick.getRawButton(9)){
+    if (driver_joystick.getRawButton(9)) {
       powerScale = 1;
-    }else{
+    } else {
       powerScale = 0.825;
     }
 
     leftOutput = 0;
     rightOutput = 0;
+
     // Split arcade
     leftJoyStick = applyDeadZone(driver_joystick.getRawAxis(1) * -1);
-    // if (leftJoyStick != 0) {
-    // leftJoyStick = Math.cbrt(leftJoyStick);
-    // //leftJoyStick = leftJoyStick;
-    // }
     rightJoyStick = applyDeadZone(driver_joystick.getRawAxis(4));
-    // if (rightJoyStick != 0) {
-    // rightJoyStick = Math.cbrt(rightJoyStick);
 
-    // }
     leftOutput = leftJoyStick - rightJoyStick * splitTurnScale;
     rightOutput = leftJoyStick + rightJoyStick * splitTurnScale;
     double powerDiff = 0;
@@ -585,6 +488,7 @@ public class Robot extends TimedRobot {
       rightOutput += powerDiff;
     }
 
+    // Fixes turning at high speeds
     if (rightCurrentPower + 0.05 < rightOutput) {
       rightOutput += 0.05;
     } else if (rightCurrentPower - 0.05 > rightOutput) {
@@ -597,6 +501,7 @@ public class Robot extends TimedRobot {
       leftOutput -= 0.05;
     }
 
+    // Restricts output from exceeding 1
     if (rightOutput > 1) {
       rightOutput = 1;
     } else if (rightOutput < -1) {
@@ -611,63 +516,63 @@ public class Robot extends TimedRobot {
   }
 
   private void Limelight() {
+    // Network tables
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     NetworkTableEntry tx = table.getEntry("tx");
     NetworkTableEntry ty = table.getEntry("ty");
     NetworkTableEntry ta = table.getEntry("ta");
     NetworkTableEntry tv = table.getEntry("tv");
 
-    // read values periodically
+    // Read values periodically
     Lx = tx.getDouble(0.0);
     Ly = ty.getDouble(0.0);
     Larea = ta.getDouble(0.0);
     Ltv = tv.getDouble(0.0);
-    //SmartDashboard.putNumber("ooks", centerX);
 
-    // post to smart dashboard periodically
+    // Post to smart dashboard periodically
     SmartDashboard.putNumber("LimelightX", Lx);
     SmartDashboard.putNumber("LimelightY", Ly);
     SmartDashboard.putNumber("LimelightArea", Larea);
     SmartDashboard.putNumber("Distance (lime)", limeDistance);
 
     counter = System.currentTimeMillis();
-    
+
     // Limelight distance
     if (Ltv == 1) {
       limeDistance = (104 - 39) / Math.tan(Math.toRadians(20 + Ly));
-      if(limeDistance > 215){
+      if (limeDistance > 215) {
         tooFar = true;
         tooClose = false;
         inRange = false;
-      }else if(limeDistance < 160){
+      } else if (limeDistance < 160) {
         tooFar = false;
         tooClose = true;
         inRange = false;
-      }else{
+      } else {
         tooFar = false;
         tooClose = false;
         inRange = true;
       }
-    }else{
-        tooFar = false;
-        tooClose = false;
-        inRange = false;
+    } else {
+      tooFar = false;
+      tooClose = false;
+      inRange = false;
     }
-
 
   }
 
   private void climing() {
-
+    // Calibrated encoder value
     calibratedClimberValue = climberCalibrationValue + climberEconder.getPosition();
 
+    // Sets calibratedClimberValue to 0 when the climber ir sensor is triggered for
+    // the first time
     if (!ir2.get() && firstBreak) {
-
       climberCalibrationValue = -climberEconder.getPosition();
       firstBreak = false;
     } else {
 
-      // Rubble
+      // Rumble
       if (calibratedClimberValue > 21) {
         rumble = (calibratedClimberValue - 21) / 15;
       } else {
@@ -676,11 +581,11 @@ public class Robot extends TimedRobot {
 
       // Normal climbing
       if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > climberBottomStopValue
-      && driver_joystick.getPOV() == 0) {
+          && driver_joystick.getPOV() == 0) {
         climberVoltage = driver_joystick.getRawAxis(2) * -12;
-      }  else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
+      } else if (driver_joystick.getRawAxis(2) >= 0.1 && calibratedClimberValue > -4) {
         climberVoltage = driver_joystick.getRawAxis(2) * -3;
-      }else if (driver_joystick.getRawAxis(3) >= 0.1 && calibratedClimberValue < climberTopStopValue) {
+      } else if (driver_joystick.getRawAxis(3) >= 0.1 && calibratedClimberValue < climberTopStopValue) {
         climberVoltage = driver_joystick.getRawAxis(3) * 6;
       } else if (calibratedClimberValue < -4 && calibratedClimberValue > -4.5) {
         climberVoltage = 3;
@@ -705,7 +610,6 @@ public class Robot extends TimedRobot {
         firstBreak = true;
       }
     }
-    // }
 
     if (shooter_joystick.getRawButton(7)) {
       firstBreak = true;
@@ -713,13 +617,10 @@ public class Robot extends TimedRobot {
   }
 
   private void uptakes() {
-    // Uptake1
-
     // Shoot Button
     if (shooter_joystick.getRawAxis(3) >= 0.1 && !ir.get() && triggerBool) {
       startT = System.currentTimeMillis();
       rpmS = S_Encoder.getVelocity();
-      // intakeCuh = 0;
       triggerBool = false;
     } else if (!triggerBool && shooter_joystick.getRawAxis(3) >= 0.1) {
       triggerBool = false;
@@ -728,54 +629,51 @@ public class Robot extends TimedRobot {
     }
 
     if (counter - startT <= 400) {
-      s = .5;
+      shootButtonUptakeSpeed = .5;
     } else if (counter - startT > 400 && !ir.get()) {
-      s = 0;
+      shootButtonUptakeSpeed = 0;
       startT = 0;
     } else if (counter - startT > 400 && ir.get()) {
-      s = 0;
+      shootButtonUptakeSpeed = 0;
       startT = 0;
     }
 
-    // Joystick
+    // Manual uptake1
     if (shooter_joystick.getRawAxis(1) > 0.1 || shooter_joystick.getRawAxis(1) < -0.1) {
       uptake1Speed = shooter_joystick.getRawAxis(1) * .7;
     } else {
       uptake1Speed = intakeCuh;
     }
 
-    // Uptake2
+    // Manual Uptake2
     if (shooter_joystick.getRawAxis(5) < -0.1 || shooter_joystick.getRawButton(3) && ir.get()) {
       uptake2Speed = 0.4;
     } else if (shooter_joystick.getRawAxis(5) > 0.1) {
       uptake2Speed = -0.4;
-
     } else {
-      // Why??????????????
-      uptake2Speed = s;
+      uptake2Speed = shootButtonUptakeSpeed;
     }
 
   }
 
   private void intake() {
     if (shooter_joystick.getRawButton(6) || driver_joystick.getRawButton(6)) {
+      // In
       intakeSpeed = 0.95;
       intakeCuh = -.6;
     } else if (shooter_joystick.getRawButton(5) || driver_joystick.getRawButton(5)) {
+      // Out
       intakeCuh = 0;
-      intakeSpeed = -.35;
+      intakeSpeed = -.65;
     } else {
       intakeCuh = 0;
       intakeSpeed = 0;
     }
-
   }
 
   private void shooter() {
 
-    
-
-    // Auto aim
+    // Limelight aim
     if (driver_joystick.getRawButton(4)) {
       if (Lx > 2.5) {
         leftOutput = -0.05;
@@ -792,38 +690,43 @@ public class Robot extends TimedRobot {
     // Limelight autospeedd
     autoShooterSpeed = -.026798 * (limeDistance * limeDistance) + (25.2379 * limeDistance) - 632.833;
 
-    // D-Pad set points
+    // D-Pad set shooter speed
     if (shooter_joystick.getPOV() == 0) {
+      // High shot
       shooterSpeed = 0.43;
-      if(S_Encoder.getVelocity() > 2200){
+      // Makes shooter controller rumble when shooting
+      if (S_Encoder.getVelocity() > 2170) {
         rumbleL = 1;
-      }else{
+      } else {
         rumbleL = 0;
       }
-
-    }else if (shooter_joystick.getPOV() == 90) {
+    } else if (shooter_joystick.getPOV() == 90) {
+      // High shot from launch pad
       shooterSpeed = 0.45;
-      if(S_Encoder.getVelocity() > 2300){
+      if (S_Encoder.getVelocity() > 2300) {
         rumbleL = 1;
-      }else{
+      } else {
         rumbleL = 0;
       }
-
     } else if (shooter_joystick.getPOV() == 180) {
+      // Low shot
       shooterSpeed = 0.2;
-      if(S_Encoder.getVelocity() > 900 && S_Encoder.getVelocity() < 1000){
+      if (S_Encoder.getVelocity() > 900 && S_Encoder.getVelocity() < 1000) {
         rumbleL = 1;
-      }else{
+      } else {
         rumbleL = 0;
       }
-
-    } else if (shooter_joystick.getRawAxis(2) >= 0.1) {
-      shooterSpeed = shooter_joystick.getRawAxis(2);
-
     } else if (shooter_joystick.getPOV() == 270) {
+      // Limelight speed
+      // This is more of a test
+      // Not reliable
       shooterSpeed = autoShooterSpeed / 5000;
-
+    } else if (shooter_joystick.getRawAxis(2) >= 0.1) {
+      // Manual speed
+      shooterSpeed = shooter_joystick.getRawAxis(2);
     } else {
+      // This vaule can be set in smart shuffleboard
+      // Otherwise it defaults to 0
       shooterSpeed = testShooterSpeed;
       rumbleL = 0;
     }
@@ -831,45 +734,25 @@ public class Robot extends TimedRobot {
   }
 
   private void smartDashboardUpdate() {
-
-    // 10 Axis Gyro
-    // SmartDashboard.putNumber("Angle", angle);
-    // SmartDashboard.putNumber("Adjusted Angle", adjustedAngle);
-    // SmartDashboard.putNumber("acceleration", imu.getYFilteredAccelAngle());
-    SmartDashboard.putNumber("climbVal", calibratedClimberValue);
+    // IR sensor
     SmartDashboard.putBoolean("climbIr", ir2.get());
     SmartDashboard.putBoolean("shootIr", ir.get());
 
-    //SmartDashboard.putBoolean("fBrake", firstBreak);
-    // SmartDashboard.putBoolean("go", goOrNo);
-
-    // Encoders
-    // SmartDashboard.putNumber("right motor power", splitRight);
-    // SmartDashboard.putNumber("left motor power", splitLeft);
-
-    //SmartDashboard.putNumber("Right Wheels", r_encoder.getVelocity() * -1);
-    //SmartDashboard.putNumber("Left Wheels", l_encoder.getVelocity());
-
+    // Econder
     SmartDashboard.putNumber("rEncoder", (r_encoder.getPosition() / 12.75 * 18 * -1));
     SmartDashboard.putNumber("lEncoder", l_encoder.getPosition() / 12.75 * 18);
-    //SmartDashboard.putNumber("distance", distance);
-    //SmartDashboard.putNumber("targetAngle", targetAngle);
     SmartDashboard.putNumber("Climb Encoder", climberEconder.getPosition());
+    SmartDashboard.putNumber("climbVal", calibratedClimberValue);
+
+    // Shooter
+    SmartDashboard.putNumber("Shooter RPM", S_Encoder.getVelocity());
+    SmartDashboard.putBoolean("trigger Bool", triggerBool);
     SmartDashboard.putNumber("FINAL RPM", rpmS);
     SmartDashboard.putNumber("tSp", speed);
-
-    // smartSpeed = SmartDashboard.getNumber("shooterSpeed", .2);
-    SmartDashboard.putNumber("Shooter RPM", S_Encoder.getVelocity());
-    //SmartDashboard.putNumber("Target RPM", autoShooterSpeed);
-    // SmartDashboard.putNumber("woah", rpmAdjustedSpeed);
-    SmartDashboard.putBoolean("trigger Bool", triggerBool);
-    yintShoot = SmartDashboard.getNumber("Yint", .3687);
-    intspeed = SmartDashboard.getNumber("intakeSpeed", .5);
-    // autoShooterSpeed = SmartDashboard.getNumber("WHEELSPEED", 0);
+    // Set testShooterSpeed to a value between 0 to 1
     testShooterSpeed = SmartDashboard.getNumber("testShooterSpeed", 0);
-    // auton = SmartDashboard.getNumber("auton", 0);
 
-    //distances
+    // In Range
     SmartDashboard.putBoolean("tooFar", tooFar);
     SmartDashboard.putBoolean("tooClose", tooClose);
     SmartDashboard.putBoolean("inRange", inRange);
