@@ -1,4 +1,6 @@
 # 3648-Comp-2022
+<img src="https://static.wixstatic.com/media/7d259e_4ed5432430304419a7c7f4ca5f321f09~mv2.jpg/v1/fill/w_148,h_148,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/Logo_edited.jpg" alt="TEAm???">
+
 <h2>Setup</h2>
 
 <ol type="2">
@@ -57,4 +59,10 @@
   <li>**WARNING** When using manual shooter speed faster than 0.6 will lead to delamination of the fly wheel **WARNING**</li>
 </ul>
 
+<h2>Images:</h2>
+<br>
+<img src="https://static.wixstatic.com/media/7d259e_9e93f04cd37049d2b891dcf3b299a2db~mv2.png/v1/fit/w_895,h_555,q_90/7d259e_9e93f04cd37049d2b891dcf3b299a2db~mv2.webp" alt="A robot fighting for its life!!">
 
+<img src="https://static.wixstatic.com/media/7d259e_d899e206452a474d88f0172204897f8f~mv2.png/v1/fit/w_895,h_606,q_90/7d259e_d899e206452a474d88f0172204897f8f~mv2.webp" alt="A robot climbing...">
+
+<img src="https://static.wixstatic.com/media/7d259e_c2e527167e154998967f27e946126dc8~mv2.png/v1/fit/w_895,h_555,q_90/7d259e_c2e527167e154998967f27e946126dc8~mv2.webp" alt="TEAm???">
