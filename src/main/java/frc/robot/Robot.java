@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import frc.robot.Pid;
 import edu.wpi.first.wpilibj.ADIS16448_IMU;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
@@ -723,7 +724,12 @@ public class Robot extends TimedRobot {
       shooterSpeed = autoShooterSpeed / 5000;
     } else if (shooter_joystick.getRawAxis(2) >= 0.1) {
       // Manual speed
-      shooterSpeed = shooter_joystick.getRawAxis(2);
+      double current = S_Encoder.getVelocity();
+      //double target = shooter_joystick.getRawAxis(2);
+      double target = 2000;
+      shooterSpeed = Pid.execute(target, current);
+      
+
     } else {
       // This vaule can be set in smart shuffleboard
       // Otherwise it defaults to 0
@@ -757,4 +763,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("tooClose", tooClose);
     SmartDashboard.putBoolean("inRange", inRange);
   }
+
+
 }
